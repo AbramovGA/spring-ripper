@@ -3,6 +3,9 @@ package quoters;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -12,6 +15,12 @@ import java.util.Map;
 public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
     private Map<String, Class> map = new HashMap<>();
     private ProfilingController controller = new ProfilingController();
+
+    public ProfilingHandlerBeanPostProcessor() throws Exception {
+        MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        platformMBeanServer.registerMBean(controller, new ObjectName("profiling", "name", "controller"));
+    }
+
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         Class<?> beanClass = bean.getClass();
@@ -22,8 +31,8 @@ public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
     }
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Class beanClass = map.getClass(beanName);
+    public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
+        Class beanClass = map.getClass();
         if(beanClass != null){
             return Proxy.newProxyInstance(beanClass.getClassLoader(), beanClass.getInterfaces(), new InvocationHandler() {
                 @Override
@@ -36,6 +45,7 @@ public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
                         long after = System.nanoTime();
                         System.out.println(after-before);
                         System.out.println("Всё");
+                        return retVal;
                     } else {
                         return method.invoke(bean, args);
                     }
