@@ -24,16 +24,16 @@ public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         Class<?> beanClass = bean.getClass();
-        if(beanClass.isAnnotationPresent(Profiling.class)) {
+        if (beanClass.isAnnotationPresent(Profiling.class)) {
             map.put(beanName, beanClass);
         }
         return bean;
     }
 
     @Override
-    public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
-        Class beanClass = map.getClass();
-        if(beanClass != null){
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        Class beanClass = map.get(beanName);
+        if (beanClass != null) {
             return Proxy.newProxyInstance(beanClass.getClassLoader(), beanClass.getInterfaces(), new InvocationHandler() {
                 @Override
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -43,7 +43,7 @@ public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
                         long before = System.nanoTime();
                         Object retVal = method.invoke(bean, args);
                         long after = System.nanoTime();
-                        System.out.println(after-before);
+                        System.out.println(after - before);
                         System.out.println("Всё");
                         return retVal;
                     } else {
@@ -56,3 +56,9 @@ public class ProfilingHandlerBeanPostProcessor implements BeanPostProcessor {
         return bean;
     }
 }
+
+
+
+
+
+
