@@ -13,13 +13,13 @@ public class InjectRandomIntAnnotationBeanPostProcessor implements BeanPostProce
         Field[] fields = bean.getClass().getDeclaredFields();
         for (Field field : fields) {
             InjectRandomInt annotation = field.getAnnotation(InjectRandomInt.class);
-            if(annotation != null) {
+            if (annotation != null) {
                 int min = annotation.min();
                 int max = annotation.max();
                 Random random = new Random();
                 int i = min + random.nextInt(max - min);
                 field.setAccessible(true);
-                ReflectionUtils.setField(field,bean,i);
+                ReflectionUtils.setField(field, bean, i);
             }
         }
         return bean;
